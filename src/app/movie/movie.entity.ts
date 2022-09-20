@@ -5,10 +5,10 @@ import {
   ManyToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { Genre } from './genre.entity';
+import { GenreEntity } from './genre.entity';
 
 @Entity({ name: 'movies' })
-export class Movie {
+export class MovieEntity {
   @PrimaryGeneratedColumn('uuid')
   id?: string;
 
@@ -24,7 +24,7 @@ export class Movie {
   @Column({ name: 'average_imdb' })
   average_imdb: number;
 
-  @ManyToMany(() => Genre, { eager: true })
+  @ManyToMany(() => GenreEntity, { eager: true })
   @JoinTable()
-  genres: Genre[];
+  genres: GenreEntity[];
 }

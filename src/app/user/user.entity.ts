@@ -5,14 +5,15 @@ import {
   ManyToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { Movie } from '../movie/movie.entity';
+import { MovieEntity } from '../movie/movie.entity';
+import { compare } from 'bcrypt';
 
 @Entity({ name: 'users' })
-export class User {
+export class UserEntity {
   @PrimaryGeneratedColumn('uuid')
   id?: string;
 
-  @Column({ name: 'email' })
+  @Column({ name: 'email', unique: true })
   email: string;
 
   @Column({ name: 'password' })
@@ -21,10 +22,14 @@ export class User {
   @Column({ name: 'username' })
   username: string;
 
-  @Column({ name: 'is_admin' })
+  @Column({ name: 'is_admin', default: false })
   isAdmin: boolean;
 
-  @ManyToMany(() => Movie)
+  @ManyToMany(() => MovieEntity)
   @JoinTable()
-  favoriteMovies: Movie[];
+  favoriteMovies: MovieEntity[];
+
+  comparePassword = async (passwordToCompare: string): Promise<boolean> => {
+    return await compare(passwordToCompare, this.password);
+  };
 }

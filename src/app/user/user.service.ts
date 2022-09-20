@@ -1,4 +1,54 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { LoginUserDto } from './dto/login-user.dto';
+import { UserEntity } from './user.entity';
+import { sign } from 'jsonwebtoken';
+import { CreateUserDto } from './dto/create-user.dto';
+import { hash } from 'bcrypt';
 
 @Injectable()
-export class UserService {}
+export class UserService {
+  constructor(
+    @InjectRepository(UserEntity)
+    private readonly userRepository: Repository<UserEntity>,
+  ) {}
+
+  async save(data: CreateUserDto) {
+    data.password = await hash(data.password, 10);
+
+    const user = await this.userRepository.save(data);
+
+    console.log('OIIIIIIIIIIIIIIIIIIII', user);
+
+    return user;
+  }
+
+  async login(data: LoginUserDto) {
+    const user = await this.userRepository.findOneBy({
+      email: data.email,
+    });
+
+    if (!user) {
+      throw new HttpException('Unauthorized', HttpStatus.FORBIDDEN);
+    }
+
+    const password = await user.comparePassword(data.password);
+
+    if (!password) {
+      throw new HttpException('Unauthorized', HttpStatus.FORBIDDEN);
+    }
+
+    const token = sign(
+      { id: user.id, email: user.email },
+      process.env.SECRET_KEY,
+      { expiresIn: process.env.EXPIRES_IN },
+    );
+
+    return { token };
+  }
+
+  async listAll() {
+    return await this.userRepository.find();
+  }
+}
