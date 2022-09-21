@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { LoginUserDto } from './dto/login-user.dto';
@@ -19,8 +19,6 @@ export class UserService {
 
     const user = await this.userRepository.save(data);
 
-    console.log('OIIIIIIIIIIIIIIIIIIII', user);
-
     return user;
   }
 
@@ -30,13 +28,13 @@ export class UserService {
     });
 
     if (!user) {
-      throw new HttpException('Unauthorized', HttpStatus.FORBIDDEN);
+      throw new UnauthorizedException('Incorrect email or password');
     }
 
     const password = await user.comparePassword(data.password);
 
     if (!password) {
-      throw new HttpException('Unauthorized', HttpStatus.FORBIDDEN);
+      throw new UnauthorizedException('Incorrect email or password');
     }
 
     const token = sign(
