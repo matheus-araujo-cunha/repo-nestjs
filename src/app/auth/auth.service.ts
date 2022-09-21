@@ -28,7 +28,7 @@ export class AuthService {
   }
 
   async login(user: UserEntity) {
-    const token = { sub: user.id, email: user.email };
+    const token = { sub: user.id, email: user.email, isAdmin: user.isAdmin };
 
     return { token: this.jwtService.sign(token) };
   }
