@@ -22,6 +22,10 @@ export class UserService {
     return user;
   }
 
+  async findOne(payload: object) {
+    return await this.userRepository.findOneBy({ ...payload });
+  }
+
   async login(data: LoginUserDto) {
     const user = await this.userRepository.findOneBy({
       email: data.email,
