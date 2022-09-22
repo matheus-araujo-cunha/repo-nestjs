@@ -25,7 +25,7 @@ export class UserEntity {
   @Column({ name: 'is_admin', default: false })
   isAdmin: boolean;
 
-  @ManyToMany(() => MovieEntity)
+  @ManyToMany(() => MovieEntity, { lazy: true })
   @JoinTable()
   favoriteMovies: MovieEntity[];
 
