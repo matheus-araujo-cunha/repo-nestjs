@@ -6,7 +6,6 @@ import { LoginUserDto } from './dto/login-user.dto';
 import { UserService } from './user.service';
 
 @Controller('users')
-@UseGuards(AuthGuard('jwt'))
 export class UserController {
   constructor(private userService: UserService) {}
 
@@ -15,6 +14,7 @@ export class UserController {
   async save(@Body() userRequest: CreateUserDto) {
     return await this.userService.save(userRequest);
   }
+  @UseGuards(AuthGuard('jwt'))
   @UseGuards(isAdminGuard)
   @Get()
   async listAll() {

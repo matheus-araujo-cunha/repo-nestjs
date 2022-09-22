@@ -13,5 +13,5 @@ export const AppDataSource = new DataSource({
   migrationsRun: false,
   migrationsTableName: 'migration',
   migrations: ['dist/**/migrations/*.js'],
-  ssl: false,
+  ssl: { rejectUnauthorized: false },
 });
