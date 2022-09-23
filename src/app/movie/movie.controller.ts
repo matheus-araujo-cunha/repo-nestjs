@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   Patch,
   Post,
   Req,
@@ -24,13 +25,14 @@ export class MovieController {
   }
 
   @Patch(':id')
-  async updateMovie() {
-    return null;
+  async updateMovie(@Req() req: AuthRequest) {
+    return await this.movieService.update(req);
   }
 
   @Delete(':id')
-  async deleteMovie() {
-    return null;
+  @HttpCode(204)
+  async deleteMovie(@Req() req: AuthRequest) {
+    return await this.movieService.delete(req);
   }
 
   @Post(':id')
