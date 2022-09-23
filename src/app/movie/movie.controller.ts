@@ -10,6 +10,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { Request } from 'supertest';
 import { AuthRequest } from '../auth/interface/auth-request.interface';
 import { CreateMovieDto } from './dto/create-movie.dto.ts';
 import { MovieService } from './movie.service';
@@ -22,6 +23,16 @@ export class MovieController {
   @Post()
   async createMovie(@Body() movieRequest: CreateMovieDto) {
     return await this.movieService.save(movieRequest);
+  }
+
+  @Get()
+  async getAllMovies(@Req() req: AuthRequest) {
+    return await this.movieService.getAll(req);
+  }
+
+  @Get(':id')
+  async getMovieById(@Req() req: AuthRequest) {
+    return await this.movieService.getById(req.params.id);
   }
 
   @Patch(':id')

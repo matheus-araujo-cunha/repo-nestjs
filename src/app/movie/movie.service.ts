@@ -18,6 +18,60 @@ export class MovieService {
     private genreRepository: Repository<GenreEntity>,
   ) {}
 
+  async getAll({ query }: AuthRequest) {
+    const queryFormat = Object.keys(query)[0];
+
+    let movies = [];
+    const queryFilter = query[queryFormat] as string;
+
+    switch (queryFormat) {
+      case 'title':
+        movies = await this.movieRepository.find({
+          where: { title: queryFilter },
+        });
+        break;
+      case 'genre':
+        movies = await this.movieRepository
+          .createQueryBuilder('movies')
+          .leftJoinAndSelect('movies.genres', 'genres')
+          .where(`genres.name = :name`, { name: queryFilter })
+          .getMany();
+
+        break;
+      case 'average':
+        movies = await this.movieRepository
+          .createQueryBuilder('movies')
+          .orderBy('movies.average_imdb', 'DESC')
+          .getMany();
+        break;
+      case 'year':
+        const allMovies_1 = await this.movieRepository.find();
+
+        movies = allMovies_1.filter(({ releaseYear }) => {
+          console.log(releaseYear.getFullYear());
+          return releaseYear.getFullYear() === Number(queryFilter);
+        });
+        break;
+
+      case 'start_year':
+        const allMovies_2 = await this.movieRepository.find();
+
+        movies = allMovies_2.filter(({ releaseYear }) => {
+          const movieYearTs = releaseYear.getTime();
+          const startYearTs = new Date(query.start_year as string).getTime();
+          const finishYearTs = new Date(query.finish_year as string).getTime();
+
+          return movieYearTs >= startYearTs && movieYearTs <= finishYearTs;
+        });
+        break;
+
+      default:
+        movies = await this.movieRepository.find();
+    }
+
+    return movies;
+  }
+
   async save(data: CreateMovieDto) {
     const { genres } = data;
 
