@@ -11,6 +11,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { QueryFailedError } from 'typeorm';
 import { AuthRequest } from '../auth/interface/auth-request.interface';
 import { CreateMovieDto } from './dto/create-movie.dto.ts';
 import { MovieService } from './movie.service';

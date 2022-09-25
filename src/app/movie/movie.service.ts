@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnprocessableEntityException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AuthRequest } from '../auth/interface/auth-request.interface';
@@ -62,11 +66,21 @@ export class MovieService {
         queryMovie.getMany();
     }
 
-    return paginate<MovieEntity>(queryMovie, { page, limit: 10 });
+    return paginate(queryMovie, { page, limit: 10 });
   }
 
   async save(data: CreateMovieDto) {
     const { genres } = data;
+
+    const movieAlreadyExists = this.movieRepository.findOneBy({
+      title: data.title,
+    });
+
+    if (movieAlreadyExists) {
+      throw new UnprocessableEntityException(
+        'There is already a movie with this title',
+      );
+    }
 
     const genresCreated = await this.createOrGetGenre(genres);
 
@@ -80,6 +94,10 @@ export class MovieService {
 
   async getById(id: string) {
     const movie = await this.movieRepository.findOneBy({ id });
+
+    if (!movie) {
+      throw new NotFoundException(`Movie with id ${id} not exist`);
+    }
 
     return movie;
   }
@@ -106,6 +124,8 @@ export class MovieService {
   async delete({ params }: AuthRequest) {
     const { id } = params;
 
+    await this.getById(id);
+
     await this.movieRepository.delete(id);
   }
 
@@ -114,10 +134,9 @@ export class MovieService {
 
     const { genres, ...requestMovie } = body;
 
+    const movie = await this.getById(id);
     if (genres) {
       body.genres = await this.createOrGetGenre(genres);
-
-      const movie = await this.getById(id);
 
       await this.movieRepository
         .createQueryBuilder()
