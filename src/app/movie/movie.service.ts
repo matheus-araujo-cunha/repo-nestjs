@@ -6,6 +6,7 @@ import { UserEntity } from '../user/user.entity';
 import { CreateMovieDto } from './dto/create-movie.dto.ts';
 import { GenreEntity } from './genre.entity';
 import { MovieEntity } from './movie.entity';
+import { paginate } from 'nestjs-typeorm-paginate';
 
 @Injectable()
 export class MovieService {
@@ -18,58 +19,50 @@ export class MovieService {
     private genreRepository: Repository<GenreEntity>,
   ) {}
 
-  async getAll({ query }: AuthRequest) {
+  async getAll({ query }: AuthRequest, page) {
     const queryFormat = Object.keys(query)[0];
 
-    let movies = [];
+    const queryMovie = this.movieRepository.createQueryBuilder('m');
+    queryMovie.leftJoinAndSelect('m.genres', 'g');
+
     const queryFilter = query[queryFormat] as string;
 
     switch (queryFormat) {
       case 'title':
-        movies = await this.movieRepository.find({
-          where: { title: queryFilter },
-        });
+        queryMovie.where('m.title = :title', { title: queryFilter });
         break;
       case 'genre':
-        movies = await this.movieRepository
-          .createQueryBuilder('movies')
-          .leftJoinAndSelect('movies.genres', 'genres')
-          .where(`genres.name = :name`, { name: queryFilter })
-          .getMany();
+        queryMovie.where(`g.name = :name`, { name: queryFilter });
 
         break;
       case 'average':
-        movies = await this.movieRepository
-          .createQueryBuilder('movies')
-          .orderBy('movies.average_imdb', 'DESC')
-          .getMany();
+        queryMovie.orderBy('m.average_imdb', 'DESC');
         break;
       case 'year':
-        const allMovies_1 = await this.movieRepository.find();
-
-        movies = allMovies_1.filter(({ releaseYear }) => {
-          console.log(releaseYear.getFullYear());
-          return releaseYear.getFullYear() === Number(queryFilter);
-        });
+        queryMovie.orderBy('m.release_year', 'DESC');
         break;
 
       case 'start_year':
         const allMovies_2 = await this.movieRepository.find();
 
-        movies = allMovies_2.filter(({ releaseYear }) => {
+        const teste = allMovies_2.filter(({ releaseYear }) => {
           const movieYearTs = releaseYear.getTime();
           const startYearTs = new Date(query.start_year as string).getTime();
           const finishYearTs = new Date(query.finish_year as string).getTime();
 
           return movieYearTs >= startYearTs && movieYearTs <= finishYearTs;
         });
-        break;
 
+        const moviesId = teste.map((movie) => `'${movie.id}'`);
+
+        queryMovie.where(`m.id IN (${moviesId})`);
+        queryMovie.orderBy('m.release_year', 'DESC');
+        break;
       default:
-        movies = await this.movieRepository.find();
+        queryMovie.getMany();
     }
 
-    return movies;
+    return paginate<MovieEntity>(queryMovie, { page, limit: 10 });
   }
 
   async save(data: CreateMovieDto) {

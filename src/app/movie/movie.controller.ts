@@ -6,11 +6,11 @@ import {
   HttpCode,
   Patch,
   Post,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { Request } from 'supertest';
 import { AuthRequest } from '../auth/interface/auth-request.interface';
 import { CreateMovieDto } from './dto/create-movie.dto.ts';
 import { MovieService } from './movie.service';
@@ -26,8 +26,8 @@ export class MovieController {
   }
 
   @Get()
-  async getAllMovies(@Req() req: AuthRequest) {
-    return await this.movieService.getAll(req);
+  async getAllMovies(@Query('page') page = 1, @Req() req: AuthRequest) {
+    return await this.movieService.getAll(req, page);
   }
 
   @Get(':id')
