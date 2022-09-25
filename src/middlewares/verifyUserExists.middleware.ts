@@ -5,10 +5,10 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { NextFunction, Request, Response } from 'express';
-import { CreateUserDto } from 'src/app/user/dto/create-user.dto';
-import { UserEntity } from 'src/app/user/user.entity';
+import { CreateUserDto } from 'src/user/dto/create-user.dto';
+import { UserEntity } from 'src/user/user.entity';
 import { Repository } from 'typeorm';
-import { UserService } from '../app/user/user.service';
+import { UserService } from '../user/user.service';
 
 @Injectable()
 export class VerifyUserExists implements NestMiddleware {

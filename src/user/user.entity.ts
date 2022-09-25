@@ -5,7 +5,7 @@ import {
   ManyToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { MovieEntity } from '../movie/movie.entity';
+import { MovieEntity } from '../movie/entities/movie.entity';
 import { compare } from 'bcrypt';
 
 @Entity({ name: 'users' })

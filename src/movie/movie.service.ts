@@ -8,8 +8,8 @@ import { Repository } from 'typeorm';
 import { AuthRequest } from '../auth/interface/auth-request.interface';
 import { UserEntity } from '../user/user.entity';
 import { CreateMovieDto } from './dto/create-movie.dto.ts';
-import { GenreEntity } from './genre.entity';
-import { MovieEntity } from './movie.entity';
+import { GenreEntity } from './entities/genre.entity';
+import { MovieEntity } from './entities/movie.entity';
 import { paginate } from 'nestjs-typeorm-paginate';
 
 @Injectable()
@@ -72,7 +72,7 @@ export class MovieService {
   async save(data: CreateMovieDto) {
     const { genres } = data;
 
-    const movieAlreadyExists = this.movieRepository.findOneBy({
+    const movieAlreadyExists = await this.movieRepository.findOneBy({
       title: data.title,
     });
 

@@ -1,14 +1,13 @@
 import { hashSync } from 'bcrypt';
 import { MigrationInterface, QueryRunner } from 'typeorm';
-
 import { config } from 'dotenv';
 
 config();
 
-export class CreateUserAndMoviesTables1663807449500
+export class CreateUserAndMoviesTables1664145355310
   implements MigrationInterface
 {
-  name = 'CreateUserAndMoviesTables1663807449500';
+  name = 'CreateUserAndMoviesTables1664145355310';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
@@ -22,11 +21,11 @@ export class CreateUserAndMoviesTables1663807449500
     );
     await queryRunner.query(
       `
-              INSERT INTO "users" ("username", "email", "password", "is_admin")
-              VALUES ('${process.env.ADMIN_USERNAME}', '${
+                INSERT INTO "users" ("username", "email", "password", "is_admin")
+                VALUES ('${process.env.ADMIN_USERNAME}', '${
         process.env.ADMIN_EMAIL
       }', '${hashSync(process.env.ADMIN_PASSWORD as string, 10)}', true)
-          `,
+            `,
     );
     await queryRunner.query(
       `CREATE TABLE "movies_genres_genres" ("moviesId" uuid NOT NULL, "genresId" integer NOT NULL, CONSTRAINT "PK_59537f354fd4a79606cc4f3cf1b" PRIMARY KEY ("moviesId", "genresId"))`,
