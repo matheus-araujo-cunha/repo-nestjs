@@ -11,6 +11,7 @@ import { CreateMovieDto } from './dto/create-movie.dto.ts';
 import { GenreEntity } from './entities/genre.entity';
 import { MovieEntity } from './entities/movie.entity';
 import { paginate } from 'nestjs-typeorm-paginate';
+import { Request } from 'express';
 
 @Injectable()
 export class MovieService {
@@ -35,21 +36,24 @@ export class MovieService {
       case 'title':
         queryMovie.where('m.title = :title', { title: queryFilter });
         break;
+
       case 'genre':
         queryMovie.where(`g.name = :name`, { name: queryFilter });
 
         break;
+
       case 'average':
         queryMovie.orderBy('m.average_imdb', 'DESC');
         break;
+
       case 'year':
         queryMovie.orderBy('m.release_year', 'DESC');
         break;
 
       case 'start_year':
-        const allMovies_2 = await this.movieRepository.find();
+        const allMovies = await this.movieRepository.find();
 
-        const teste = allMovies_2.filter(({ releaseYear }) => {
+        const filteredMovies = allMovies.filter(({ releaseYear }) => {
           const movieYearTs = releaseYear.getTime();
           const startYearTs = new Date(query.start_year as string).getTime();
           const finishYearTs = new Date(query.finish_year as string).getTime();
@@ -57,11 +61,12 @@ export class MovieService {
           return movieYearTs >= startYearTs && movieYearTs <= finishYearTs;
         });
 
-        const moviesId = teste.map((movie) => `'${movie.id}'`);
+        const moviesId = filteredMovies.map((movie) => `'${movie.id}'`);
 
         queryMovie.where(`m.id IN (${moviesId})`);
         queryMovie.orderBy('m.release_year', 'DESC');
         break;
+
       default:
         queryMovie.getMany();
     }
@@ -102,9 +107,7 @@ export class MovieService {
     return movie;
   }
 
-  async favorite({ params, user }: AuthRequest) {
-    const { id } = params;
-
+  async favorite({ user }: AuthRequest, id: string) {
     const movie = await this.getById(id);
 
     const findUser = await this.userRepository.findOneBy({ id: user.id });
@@ -121,17 +124,13 @@ export class MovieService {
     return await findUser.favoriteMovies;
   }
 
-  async delete({ params }: AuthRequest) {
-    const { id } = params;
-
+  async delete(id: string) {
     await this.getById(id);
 
     await this.movieRepository.delete(id);
   }
 
-  async update({ body, params }: AuthRequest) {
-    const { id } = params;
-
+  async update({ body }: Request, id: string) {
     const { genres, ...requestMovie } = body;
 
     const movie = await this.getById(id);

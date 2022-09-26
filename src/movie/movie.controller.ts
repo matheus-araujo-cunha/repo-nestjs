@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   HttpCode,
+  Param,
   Patch,
   Post,
   Query,
@@ -11,48 +12,66 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { QueryFailedError } from 'typeorm';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthRequest } from '../auth/interface/auth-request.interface';
 import { CreateMovieDto } from './dto/create-movie.dto.ts';
+import { MovieQueryDto } from './dto/movie-query-dto';
 import { MovieService } from './movie.service';
 
-@UseGuards(AuthGuard('jwt'))
-@Controller('movies')
+@ApiTags('movies')
+@Controller('api/movies')
 export class MovieController {
   constructor(private movieService: MovieService) {}
 
+  @UseGuards(AuthGuard('jwt'))
   @Post()
+  @ApiOperation({ summary: 'Register one movie' })
   async createMovie(@Body() movieRequest: CreateMovieDto) {
     return await this.movieService.save(movieRequest);
   }
 
   @Get()
-  async getAllMovies(@Query('page') page = 1, @Req() req: AuthRequest) {
+  @ApiOperation({ summary: 'List all movies' })
+  async getAllMovies(
+    @Query('page') page = 1,
+    @Query() querys: MovieQueryDto,
+    @Req()
+    req: AuthRequest,
+  ) {
     return await this.movieService.getAll(req, page);
   }
 
   @Get(':id')
-  async getMovieById(@Req() req: AuthRequest) {
-    return await this.movieService.getById(req.params.id);
+  @ApiOperation({ summary: 'List a movie based on id' })
+  async getMovieById(@Param('id') id: string) {
+    return await this.movieService.getById(id);
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @Patch(':id')
-  async updateMovie(@Req() req: AuthRequest) {
-    return await this.movieService.update(req);
+  @ApiOperation({ summary: 'Update a movie based on id' })
+  async updateMovie(@Req() req: AuthRequest, @Param('id') id: string) {
+    return await this.movieService.update(req, id);
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @Delete(':id')
+  @ApiOperation({ summary: 'Delete a movie based on id' })
   @HttpCode(204)
-  async deleteMovie(@Req() req: AuthRequest) {
-    return await this.movieService.delete(req);
+  async deleteMovie(@Param('id') id: string) {
+    return await this.movieService.delete(id);
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @Post(':id')
-  async favoriteMovie(@Req() req: AuthRequest) {
-    return await this.movieService.favorite(req);
+  @ApiOperation({ summary: 'Add a movie to your favorites list' })
+  async favoriteMovie(@Req() req: AuthRequest, @Param('id') id: string) {
+    return await this.movieService.favorite(req, id);
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @Get('favorites')
+  @ApiOperation({ summary: 'List your favorite movies' })
   async getFavoriteMovies(@Req() req: AuthRequest) {
     return await this.movieService.getMovies(req);
   }

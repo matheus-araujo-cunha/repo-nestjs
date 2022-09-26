@@ -21,8 +21,8 @@ export class MovieEntity {
   @Column({ name: 'release_year' })
   releaseYear: Date;
 
-  @Column({ name: 'average_imdb' })
-  average_imdb: number;
+  @Column({ name: 'average_imdb', type: 'float' })
+  averageImdb: number;
 
   @ManyToMany(() => GenreEntity, { eager: true })
   @JoinTable()
