@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { UserEntity } from '../user/user.entity';
 import { UserService } from '../user/user.service';
 import { compare } from 'bcrypt';
@@ -29,6 +29,10 @@ export class AuthService {
 
   async login(user: UserEntity) {
     const token = { sub: user.id, email: user.email, isAdmin: user.isAdmin };
+
+    if (!user.isAdmin) {
+      throw new UnauthorizedException('Only administrators can login');
+    }
 
     return { token: this.jwtService.sign(token) };
   }
