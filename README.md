@@ -31,6 +31,16 @@
 ```bash
 $ npm install
 ```
+# Instructions:
+ 
+### Create an .env file and fill according to the .env.example file
+
+### Create database on your machine and use the command to run migrations
+
+```
+yarn migration:run
+```
+
 
 ## Running the app
 
